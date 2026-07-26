@@ -22,23 +22,11 @@ export async function GET(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const users = await prisma.user.findMany({
-      include: { _count: { select: { transactions: true, auditLogs: true } } },
+      select: { id: true, name: true, userCode: true, role: true, isActive: true, permissions: true, createdAt: true, updatedAt: true, _count: { select: { transactions: true, auditLogs: true } } },
       orderBy: { createdAt: 'asc' },
     });
 
-    const formatted = users.map((u) => ({
-      id: u.id,
-      name: u.name,
-      userCode: u.userCode,
-      role: u.role,
-      isActive: u.isActive,
-      permissions: u.permissions,
-      createdAt: u.createdAt,
-      updatedAt: u.updatedAt,
-      _count: u._count,
-    }));
-
-    return NextResponse.json({ data: formatted });
+    return NextResponse.json({ data: users });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

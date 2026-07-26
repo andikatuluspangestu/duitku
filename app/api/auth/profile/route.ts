@@ -11,20 +11,13 @@ export async function GET(req: NextRequest) {
     const session = getUserSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const user = await prisma.user.findUnique({ where: { id: session.id } });
+    const user = await prisma.user.findUnique({
+      where: { id: session.id },
+      select: { id: true, name: true, userCode: true, role: true, isActive: true, permissions: true, createdAt: true },
+    });
     if (!user) return NextResponse.json({ error: 'Pengguna tidak ditemukan' }, { status: 404 });
 
-    return NextResponse.json({
-      data: {
-        id: user.id,
-        name: user.name,
-        userCode: user.userCode,
-        role: user.role,
-        isActive: user.isActive,
-        permissions: user.permissions,
-        createdAt: user.createdAt,
-      },
-    });
+    return NextResponse.json({ data: user });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

@@ -18,11 +18,6 @@ export const ProofViewerModal: React.FC<ProofViewerModalProps> = ({
 }) => {
   if (!isOpen || !transaction || !transaction.attachmentUrl) return null;
 
-  const isPdf =
-    transaction.attachmentMimeType === 'application/pdf' ||
-    transaction.attachmentUrl.startsWith('data:application/pdf') ||
-    transaction.attachmentUrl.endsWith('.pdf');
-
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-[#ffffff] dark:bg-[#0a0a0a] border border-[#ebebeb] dark:border-[#262626] rounded-xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200 text-[#171717] dark:text-[#ffffff]">
@@ -63,21 +58,13 @@ export const ProofViewerModal: React.FC<ProofViewerModalProps> = ({
 
         {/* Content Body */}
         <div className="flex-1 p-4 sm:p-6 overflow-auto bg-[#fafafa] dark:bg-[#000000] flex items-center justify-center min-h-[280px]">
-          {isPdf ? (
-            <iframe
+          <div className="relative max-h-[600px] flex items-center justify-center">
+            <img
               src={transaction.attachmentUrl}
-              className="w-full h-[550px] rounded-lg border border-[#ebebeb] dark:border-[#262626]"
-              title="PDF Viewer"
+              alt={transaction.attachmentName || 'Bukti Transaksi'}
+              className="max-h-[550px] w-auto max-w-full rounded-lg border border-[#ebebeb] dark:border-[#262626] object-contain"
             />
-          ) : (
-            <div className="relative max-h-[600px] flex items-center justify-center">
-              <img
-                src={transaction.attachmentUrl}
-                alt={transaction.attachmentName || 'Bukti Transaksi'}
-                className="max-h-[550px] w-auto max-w-full rounded-lg border border-[#ebebeb] dark:border-[#262626] object-contain"
-              />
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

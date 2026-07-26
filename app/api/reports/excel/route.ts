@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 
     const transactions = await prisma.transaction.findMany({
       where,
-      include: { category: true, user: { select: { id: true, name: true, userCode: true } } },
+      include: { category: { select: { id: true, name: true, type: true } }, user: { select: { id: true, name: true, userCode: true } } },
       orderBy: { transactionDate: 'desc' },
     });
 

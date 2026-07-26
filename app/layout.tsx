@@ -4,6 +4,7 @@ import { ToastProvider } from '@/components/ui/ToastContext';
 import { ThemeProvider } from '@/components/ui/ThemeContext';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://uangkasir.vercel.app'),
   title: 'UangKasir - Aplikasi Pencatatan Kas Keuangan Sederhana',
   description: 'Sistem pencatatan kas keuangan sederhana dengan role Superadmin, Admin, dan User, ekspor Laporan Excel/PDF, serta audit log.',
   manifest: '/manifest.json',

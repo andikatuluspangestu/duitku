@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     const [items, total] = await Promise.all([
       prisma.transaction.findMany({
         where,
-        include: { category: true, user: { select: { id: true, name: true, userCode: true } } },
+        include: { category: { select: { id: true, name: true, type: true } }, user: { select: { id: true, name: true, userCode: true } } },
         orderBy: { transactionDate: 'desc' },
         skip: (page - 1) * limit,
         take: limit,

@@ -278,7 +278,7 @@ export default function CreateTransactionPage() {
                 <option value="">-- Pilih Kategori --</option>
                 {filteredCategories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
-                    {cat.name}
+                    {cat.name} ({cat.type})
                   </option>
                 ))}
               </select>
@@ -325,7 +325,7 @@ export default function CreateTransactionPage() {
         {/* 5. Lampiran Bukti */}
         <div className="space-y-2">
           <label className="block font-caption-mono text-[11px] text-[#888888] dark:text-[#a1a1a1] uppercase tracking-wider font-bold">
-            LAMPIRAN BUKTI TRANSAKSI (MAKS 5MB JPG, PNG, PDF)
+            LAMPIRAN BUKTI TRANSAKSI (MAKS 5MB — JPG / PNG, DIKOMPRES KE AVIF)
           </label>
           <div className="border border-dashed border-[#ebebeb] dark:border-[#262626] hover:border-[#0070f3] dark:hover:border-[#50e3c2] bg-[#fafafa] dark:bg-[#000000] rounded-xl p-6 text-center transition-colors">
             {attachmentUrl ? (
@@ -360,11 +360,11 @@ export default function CreateTransactionPage() {
                   {isUploading ? 'Mengunggah file...' : 'Klik untuk memilih dokumen bukti transaksi'}
                 </span>
                 <span className="font-caption-mono text-[10px] text-[#888888] dark:text-[#737373]">
-                  Format yang didukung: JPG, PNG, PDF (Maksimal 5 MB)
+                  Format: JPG / PNG — dikompres otomatis ke AVIF (Maks 5 MB)
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/jpg,application/pdf"
+                  accept="image/jpeg,image/png"
                   onChange={handleFileUpload}
                   disabled={isUploading}
                   className="hidden"

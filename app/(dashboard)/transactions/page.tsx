@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Plus,
   Search,
   FileText,
   Edit2,
@@ -155,15 +154,7 @@ export default function TransactionsPage() {
             {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-[#0070f3]" />}
           </button>
 
-          {isAdmin ? (
-            <Link
-              href="/transactions/create"
-              className="vercel-button-primary flex-1 sm:flex-initial text-xs py-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Transaksi Baru</span>
-            </Link>
-          ) : (
+          {!isAdmin && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f5a623]/10 border border-[#f5a623]/30 text-[#f5a623] font-caption-mono text-xs font-semibold">
               <Lock className="w-3.5 h-3.5" />
               <span>MODE LIHAT</span>

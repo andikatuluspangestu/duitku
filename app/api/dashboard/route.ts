@@ -16,7 +16,7 @@ export async function GET() {
       prisma.transaction.findMany({
         take: 5,
         orderBy: { transactionDate: 'desc' },
-        include: { category: true, user: { select: { id: true, name: true, userCode: true } } },
+        include: { category: { select: { id: true, name: true, type: true } }, user: { select: { id: true, name: true, userCode: true } } },
       }),
       prisma.transaction.findMany({
         select: { type: true, amount: true, transactionDate: true },

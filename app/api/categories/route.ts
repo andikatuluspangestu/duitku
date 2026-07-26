@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const categories = await prisma.category.findMany({
-      include: { _count: { select: { transactions: true } } },
+      select: { id: true, name: true, type: true, createdAt: true, updatedAt: true, _count: { select: { transactions: true } } },
       orderBy: { createdAt: 'asc' },
     });
 

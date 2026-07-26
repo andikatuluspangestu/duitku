@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserSession } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
+import sharp from 'sharp';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,32 +35,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Ukuran file melebihi batas maksimum 5 MB' }, { status: 400 });
     }
 
-    // Allowed mime types (JPG, JPEG, PNG, PDF)
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    // Only allow images
+    const allowedTypes = ['image/jpeg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Format file harus JPG, JPEG, PNG, atau PDF' }, { status: 400 });
+      return NextResponse.json({ error: 'Format file harus JPG atau PNG' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64Str = buffer.toString('base64');
-    
-    // Serverless-safe Vercel Data URI
-    const fileUrl = `data:${file.type};base64,${base64Str}`;
+
+    // Convert to AVIF
+    const avifBuffer = await sharp(buffer).avif({ quality: 80 }).toBuffer();
+    const base64Str = avifBuffer.toString('base64');
+    const fileUrl = `data:image/avif;base64,${base64Str}`;
+
+    const avifName = file.name.replace(/\.[^.]+$/, '') + '.avif';
 
     await logAudit(
       'UPLOAD_ATTACHMENT',
       'ATTACHMENT',
-      `Mengunggah file lampiran: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`,
+      `Mengunggah file lampiran: ${file.name} → ${(avifBuffer.length / 1024).toFixed(1)} KB (AVIF)`,
       session.id,
       req.headers.get('x-forwarded-for') || '127.0.0.1'
     );
 
     return NextResponse.json({
       url: fileUrl,
-      name: file.name,
-      size: file.size,
-      mimeType: file.type,
+      name: avifName,
+      size: avifBuffer.length,
+      mimeType: 'image/avif',
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Gagal mengunggah file' }, { status: 500 });

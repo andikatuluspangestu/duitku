@@ -17,6 +17,8 @@ import {
   Heart,
   PanelLeftClose,
   PanelLeftOpen,
+  FilePlus,
+  Database,
 } from 'lucide-react';
 import { UserSession } from '@/lib/types';
 
@@ -53,52 +55,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return ['can_view_dashboard', 'can_view_transactions', 'can_view_categories'].includes(permKey);
   };
 
-  const menuItems = [
+  const menuGroups = [
     {
-      label: 'Dashboard Kas',
-      icon: LayoutDashboard,
-      href: '/dashboard',
-      show: hasPerm('can_view_dashboard'),
+      label: 'UMUM',
+      items: [
+        { label: 'Dashboard Kas', icon: LayoutDashboard, href: '/dashboard', show: hasPerm('can_view_dashboard') },
+      ],
     },
     {
-      label: 'Riwayat Transaksi',
-      icon: ReceiptText,
-      href: '/transactions',
-      show: hasPerm('can_view_transactions'),
+      label: 'TRANSAKSI',
+      items: [
+        { label: 'Riwayat Transaksi', icon: ReceiptText, href: '/transactions', show: hasPerm('can_view_transactions') },
+        { label: 'Input Transaksi', icon: FilePlus, href: '/transactions/create', show: hasPerm('can_manage_transactions') },
+      ],
     },
     {
-      label: 'Kategori Transaksi',
-      icon: FolderTree,
-      href: '/categories',
-      show: hasPerm('can_view_categories'),
+      label: 'MASTER',
+      items: [
+        { label: 'Kategori Transaksi', icon: FolderTree, href: '/categories', show: hasPerm('can_view_categories') },
+        { label: 'Manajemen Pengguna', icon: Users, href: '/users', show: hasPerm('can_manage_users') },
+      ],
     },
     {
-      label: 'Manajemen Pengguna',
-      icon: Users,
-      href: '/users',
-      show: hasPerm('can_manage_users'),
+      label: 'LAPORAN',
+      items: [
+        { label: 'Export Laporan', icon: FileSpreadsheet, href: '/reports', show: hasPerm('can_export_reports') },
+      ],
     },
     {
-      label: 'Export Laporan',
-      icon: FileSpreadsheet,
-      href: '/reports',
-      show: hasPerm('can_export_reports'),
+      label: 'SISTEM',
+      items: [
+        { label: 'Audit Log Sistem', icon: History, href: '/audit-log', show: hasPerm('can_view_audit_logs') },
+        { label: 'Backup & Restore', icon: Database, href: '/backup', show: isSuperadmin },
+      ],
     },
     {
-      label: 'Audit Log Sistem',
-      icon: History,
-      href: '/audit-log',
-      show: hasPerm('can_view_audit_logs'),
-    },
-    {
-      label: 'Profil Saya',
-      icon: User,
-      href: '/profile',
-      show: true,
+      label: 'AKUN',
+      items: [
+        { label: 'Profil Saya', icon: User, href: '/profile', show: true },
+      ],
     },
   ];
-
-  const visibleMenuItems = menuItems.filter((item) => item.show);
 
   return (
     <>
@@ -193,37 +190,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Menu Navigasi */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {visibleMenuItems.length > 0 ? (
-            visibleMenuItems.map((item) => {
-              const isActive = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  title={isCollapsed ? item.label : undefined}
-                  className={`flex items-center gap-3 py-2.5 rounded-lg text-xs font-medium transition-colors duration-150 ${
-                    isCollapsed ? 'lg:justify-center lg:px-0 px-3' : 'px-3'
-                  } ${
-                    isActive
-                      ? 'bg-[#f5f5f5] dark:bg-[#171717] text-[#171717] dark:text-[#ffffff] border border-[#ebebeb] dark:border-[#333333] font-semibold'
-                      : 'text-[#4d4d4d] dark:text-[#a1a1a1] hover:text-[#171717] dark:hover:text-[#ffffff] hover:bg-[#fafafa] dark:hover:bg-[#171717]'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#171717] dark:text-[#ffffff]' : 'text-[#888888] dark:text-[#737373]'}`} />
-                  <span className={`${isCollapsed ? 'lg:hidden' : 'inline'}`}>
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            })
-          ) : (
-            <p className="font-caption-mono text-[11px] text-[#888888] dark:text-[#737373] text-center py-6">
-              Tidak ada menu diizinkan.
-            </p>
-          )}
+        <nav className="flex-1 p-3 space-y-2 overflow-y-auto">
+          {menuGroups.map((group) => {
+            const visibleItems = group.items.filter((i) => i.show);
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <div key={group.label} className="space-y-0.5">
+                {!isCollapsed && (
+                  <div className="px-3 pt-2 pb-1">
+                    <span className="font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] uppercase tracking-widest font-bold">
+                      {group.label}
+                    </span>
+                  </div>
+                )}
+                {visibleItems.map((item) => {
+                  const isActive = pathname === item.href;
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      title={isCollapsed ? item.label : undefined}
+                      className={`flex items-center gap-3 py-2.5 rounded-lg text-xs font-medium transition-colors duration-150 ${
+                        isCollapsed ? 'lg:justify-center lg:px-0 px-3' : 'px-3'
+                      } ${
+                        isActive
+                          ? 'bg-[#f5f5f5] dark:bg-[#171717] text-[#171717] dark:text-[#ffffff] border border-[#ebebeb] dark:border-[#333333] font-semibold'
+                          : 'text-[#4d4d4d] dark:text-[#a1a1a1] hover:text-[#171717] dark:hover:text-[#ffffff] hover:bg-[#fafafa] dark:hover:bg-[#171717]'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#171717] dark:text-[#ffffff]' : 'text-[#888888] dark:text-[#737373]'}`} />
+                      <span className={`${isCollapsed ? 'lg:hidden' : 'inline'}`}>
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          })}
         </nav>
 
         {/* Footer Custom Attribution */}
