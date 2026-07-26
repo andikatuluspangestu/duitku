@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#ffffff] text-[#171717] font-sans antialiased selection:bg-[#171717] selection:text-[#ffffff] transition-colors duration-200;
+  }
+
+  html.dark body {
+    @apply bg-[#000000] text-[#ededed] selection:bg-[#ffffff] selection:text-[#000000];
+  }
+}
+
+/* Vercel Design System Utility Classes per DESIGN.md */
+.font-caption-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0px;
+}
+
+/* Card Surface Tokens */
+.vercel-card {
+  @apply bg-[#ffffff] border border-[#ebebeb] rounded-xl transition-all duration-200 hover:border-[#a1a1a1] dark:bg-[#0a0a0a] dark:border-[#262626] dark:hover:border-[#404040];
+}
+
+/* Form Input Tokens per DESIGN.md form-input */
+.vercel-input {
+  @apply bg-[#ffffff] border border-[#ebebeb] rounded-md px-3.5 py-2 text-sm text-[#171717] placeholder-[#888888] focus:outline-none focus:border-[#171717] transition-all font-sans dark:bg-[#000000] dark:border-[#262626] dark:text-[#ffffff] dark:placeholder-[#737373] dark:focus:border-[#ffffff];
+}
+
+/* Vercel Button Primary - Canonical Black Pill / White Pill in Dark Mode */
+.vercel-button-primary {
+  @apply bg-[#171717] text-[#ffffff] font-medium text-xs sm:text-sm px-4 py-2 rounded-full hover:bg-[#333333] transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 dark:bg-[#ffffff] dark:text-[#000000] dark:hover:bg-[#e5e5e5];
+}
+
+/* Vercel Button Secondary */
+.vercel-button-secondary {
+  @apply bg-[#ffffff] border border-[#ebebeb] text-[#171717] hover:bg-[#fafafa] hover:border-[#a1a1a1] font-medium text-xs sm:text-sm px-4 py-2 rounded-full transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 dark:bg-[#0a0a0a] dark:border-[#262626] dark:text-[#ffffff] dark:hover:bg-[#171717] dark:hover:border-[#404040];
+}
+
+/* Vercel Badge Mono */
+.vercel-badge-mono {
+  @apply font-caption-mono text-[11px] px-2 py-0.5 rounded-full border tracking-wide uppercase font-medium;
+}
+
+/* Mesh Gradient Backdrop */
+.bg-mesh-hero {
+  background: radial-gradient(circle at 50% 0%, rgba(0, 124, 240, 0.15) 0%, rgba(121, 40, 202, 0.15) 35%, rgba(255, 0, 128, 0.1) 70%, transparent 100%);
+}

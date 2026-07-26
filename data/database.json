@@ -1,0 +1,298 @@
+{
+  "users": [
+    {
+      "id": "usr_master_superadmin",
+      "name": "Super Administrator",
+      "userCode": "USR001",
+      "passwordHash": "$2a$10$v958ZY6tvSy4koV7H8FINOIpU4ngBHAiJ35LdSajoG4.YhDULe3f.",
+      "role": "SUPERADMIN",
+      "isActive": true,
+      "permissions": [
+        "can_view_dashboard",
+        "can_view_transactions",
+        "can_manage_transactions",
+        "can_view_categories",
+        "can_manage_categories",
+        "can_manage_users",
+        "can_export_reports",
+        "can_view_audit_logs"
+      ],
+      "createdAt": "2026-07-26T09:19:54.404Z",
+      "updatedAt": "2026-07-26T09:19:54.404Z"
+    },
+    {
+      "id": "usr_1785058127501",
+      "name": "Farkhana Mutia",
+      "userCode": "USR002",
+      "passwordHash": "$2a$10$/JDzyKSSc9XhZ3FB6Dayzedophf28iA.q7074AvIHFCCaNJUzNTlO",
+      "role": "ADMIN",
+      "isActive": true,
+      "permissions": [
+        "can_view_dashboard",
+        "can_view_transactions",
+        "can_manage_transactions",
+        "can_view_categories",
+        "can_manage_categories",
+        "can_export_reports"
+      ],
+      "createdAt": "2026-07-26T09:28:47.501Z",
+      "updatedAt": "2026-07-26T09:28:47.501Z"
+    },
+    {
+      "id": "usr_1785058145661",
+      "name": "Santi Wulan",
+      "userCode": "USR003",
+      "passwordHash": "$2a$10$MMvtIvJajUT/qnZSvm0NSOwKCFiuC.bh8prx5GJpXckl9kSIzdZ9S",
+      "role": "ADMIN",
+      "isActive": true,
+      "permissions": [
+        "can_view_dashboard",
+        "can_view_transactions",
+        "can_manage_transactions",
+        "can_view_categories",
+        "can_manage_categories",
+        "can_export_reports"
+      ],
+      "createdAt": "2026-07-26T09:29:05.661Z",
+      "updatedAt": "2026-07-26T09:29:16.175Z"
+    },
+    {
+      "id": "usr_1785058180791",
+      "name": "Riris",
+      "userCode": "USR004",
+      "passwordHash": "$2a$10$xLC5vOoZBn89CePREbN86OnGL3Lha03L5.SwzvsUxAmuTnEeuybqO",
+      "role": "ADMIN",
+      "isActive": true,
+      "permissions": [
+        "can_view_dashboard",
+        "can_view_transactions",
+        "can_manage_transactions",
+        "can_view_categories",
+        "can_manage_categories",
+        "can_export_reports"
+      ],
+      "createdAt": "2026-07-26T09:29:40.791Z",
+      "updatedAt": "2026-07-26T09:29:40.792Z"
+    },
+    {
+      "id": "usr_1785058213298",
+      "name": "Kasir Biasa",
+      "userCode": "USR005",
+      "passwordHash": "$2a$10$PWYIIrr9JK.nRyfdfGYPK.mnwNiNS98AyJPSWLJUdWCvvzJlAdCqq",
+      "role": "USER",
+      "isActive": true,
+      "permissions": [
+        "can_view_dashboard",
+        "can_view_transactions"
+      ],
+      "createdAt": "2026-07-26T09:30:13.298Z",
+      "updatedAt": "2026-07-26T09:30:13.298Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat_penjualan",
+      "name": "Penjualan Produk",
+      "type": "INCOME",
+      "createdAt": "2026-07-26T00:00:00.000Z",
+      "updatedAt": "2026-07-26T00:00:00.000Z"
+    },
+    {
+      "id": "cat_jasa",
+      "name": "Pendapatan Jasa",
+      "type": "INCOME",
+      "createdAt": "2026-07-26T00:00:00.000Z",
+      "updatedAt": "2026-07-26T00:00:00.000Z"
+    },
+    {
+      "id": "cat_operasional",
+      "name": "Biaya Operasional",
+      "type": "EXPENSE",
+      "createdAt": "2026-07-26T00:00:00.000Z",
+      "updatedAt": "2026-07-26T00:00:00.000Z"
+    }
+  ],
+  "transactions": [],
+  "auditLogs": [
+    {
+      "id": "log-1785058698549-si27",
+      "userId": "usr_1785058127501",
+      "user": {
+        "id": "usr_1785058127501",
+        "name": "Farkhana Mutia"
+      },
+      "action": "DELETE_CATEGORY",
+      "module": "CATEGORY",
+      "recordId": "cat_gaji",
+      "description": "Menghapus kategori: Gaji Karyawan",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:38:18.549Z"
+    },
+    {
+      "id": "log-1785058236520-vor3",
+      "userId": "usr_1785058127501",
+      "user": {
+        "id": "usr_1785058127501",
+        "name": "Farkhana Mutia"
+      },
+      "action": "LOGIN",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Farkhana Mutia (USR002) berhasil login [Role: ADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:30:36.520Z"
+    },
+    {
+      "id": "log-1785058213365-awnt",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "CREATE_USER",
+      "module": "USER",
+      "recordId": null,
+      "description": "Membuat pengguna baru: Kasir Biasa (USR005) [Role: USER]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:30:13.365Z"
+    },
+    {
+      "id": "log-1785058180859-gqbr",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "CREATE_USER",
+      "module": "USER",
+      "recordId": null,
+      "description": "Membuat pengguna baru: Riris (USR004) [Role: ADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:29:40.859Z"
+    },
+    {
+      "id": "log-1785058156244-c4gr",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "UPDATE_USER",
+      "module": "USER",
+      "recordId": null,
+      "description": "Memperbarui data & hak akses pengguna: Santi Wulan (USR003)",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:29:16.244Z"
+    },
+    {
+      "id": "log-1785058145730-u6ow",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "CREATE_USER",
+      "module": "USER",
+      "recordId": null,
+      "description": "Membuat pengguna baru: Sabti Wulan (USR003) [Role: ADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:29:05.730Z"
+    },
+    {
+      "id": "log-1785058127569-0j69",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "CREATE_USER",
+      "module": "USER",
+      "recordId": null,
+      "description": "Membuat pengguna baru: Farkhana Mutia (USR002) [Role: ADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:28:47.569Z"
+    },
+    {
+      "id": "log-1785057699285-5gkn",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "LOGIN",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Super Administrator (USR001) berhasil login [Role: SUPERADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:21:39.285Z"
+    },
+    {
+      "id": "log-1785057692145-tprc",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "LOGIN_FAILED",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Password salah untuk kode user: USR001",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:21:32.145Z"
+    },
+    {
+      "id": "log-1785057594537-2hxk",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "LOGIN",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Super Administrator (USR001) berhasil login [Role: SUPERADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:19:54.537Z"
+    },
+    {
+      "id": "log-1785057562548-i2to",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "LOGIN_FAILED",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Password salah untuk kode user: USR001",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:19:22.548Z"
+    },
+    {
+      "id": "log-1785057552524-lkf8",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator"
+      },
+      "action": "LOGIN_FAILED",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Password salah untuk kode user: USR001",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T09:19:12.524Z"
+    }
+  ]
+}

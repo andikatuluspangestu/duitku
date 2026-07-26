@@ -1,0 +1,87 @@
+// Simple Finance (Duitku) Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // "ADMIN" or "USER"
+  isActive  Boolean  @default(true)
+
+  transactions Transaction[]
+  auditLogs    AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // "INCOME" or "EXPENSE"
+
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id                 String   @id @default(uuid())
+
+  type               String   // "INCOME" or "EXPENSE"
+  amount             Float
+  description        String?
+
+  transactionDate    DateTime
+
+  attachmentUrl      String?
+  attachmentName     String?
+  attachmentSize     Int?
+  attachmentMimeType String?
+
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId         String
+  category           Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([transactionDate])
+  @@index([type])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  action      String   // LOGIN, LOGOUT, LOGIN_FAILED, CREATE_USER, UPDATE_USER, DELETE_USER, CREATE_CATEGORY, UPDATE_CATEGORY, DELETE_CATEGORY, CREATE_TRANSACTION, UPDATE_TRANSACTION, DELETE_TRANSACTION, UPLOAD_ATTACHMENT, DELETE_ATTACHMENT, EXPORT_EXCEL, EXPORT_PDF
+
+  module      String
+
+  recordId    String?
+
+  description String?
+
+  ipAddress   String?
+
+  userAgent   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
