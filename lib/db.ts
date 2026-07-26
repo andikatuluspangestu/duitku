@@ -1,9 +1,19 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import bcrypt from 'bcryptjs';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'database.json');
+const isVercel = Boolean(
+  process.env.VERCEL ||
+  process.env.NEXT_PUBLIC_VERCEL_ENV ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.NODE_ENV === 'production'
+);
+
+// Use /tmp directory on Vercel Serverless environment, otherwise local ./data directory
+const DATA_DIR = isVercel ? os.tmpdir() : path.join(process.cwd(), 'data');
+const DB_FILE = path.join(DATA_DIR, 'uangkasir_database.json');
+const SEED_DB_FILE = path.join(process.cwd(), 'data', 'database.json');
 
 export interface LocalDbData {
   users: Array<{
@@ -69,10 +79,6 @@ const ALL_PERMS = [
 ];
 
 export function resetUsersAndSeedMaster(): LocalDbData {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-
   const superadminPass = bcrypt.hashSync('12345678', 10);
   const masterUser = {
     id: 'usr_master_superadmin',
@@ -98,9 +104,9 @@ export function resetUsersAndSeedMaster(): LocalDbData {
     auditLogs: [],
   };
 
-  if (fs.existsSync(DB_FILE)) {
+  if (fs.existsSync(SEED_DB_FILE)) {
     try {
-      const raw = fs.readFileSync(DB_FILE, 'utf-8');
+      const raw = fs.readFileSync(SEED_DB_FILE, 'utf-8');
       const existing = JSON.parse(raw);
       dbData.categories = existing.categories || dbData.categories;
       dbData.transactions = existing.transactions || [];
@@ -109,19 +115,27 @@ export function resetUsersAndSeedMaster(): LocalDbData {
   }
 
   dbData.users = [masterUser];
-  fs.writeFileSync(DB_FILE, JSON.stringify(dbData, null, 2), 'utf-8');
+  writeDb(dbData);
   return dbData;
 }
 
 export function readDb(): LocalDbData {
   if (!fs.existsSync(DB_FILE)) {
+    if (fs.existsSync(SEED_DB_FILE)) {
+      try {
+        const rawSeed = fs.readFileSync(SEED_DB_FILE, 'utf-8');
+        const seedData = JSON.parse(rawSeed);
+        writeDb(seedData);
+        return seedData;
+      } catch {}
+    }
     return resetUsersAndSeedMaster();
   }
+
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
     const data = JSON.parse(raw);
 
-    // If master user does not exist or userCode is not USR001 or hash fails, reset
     const master = data.users?.find((u: any) => u.userCode === 'USR001');
     if (!master || !bcrypt.compareSync('12345678', master.passwordHash)) {
       return resetUsersAndSeedMaster();
@@ -133,5 +147,12 @@ export function readDb(): LocalDbData {
 }
 
 export function writeDb(data: LocalDbData): void {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Failed to write database file:', err);
+  }
 }
