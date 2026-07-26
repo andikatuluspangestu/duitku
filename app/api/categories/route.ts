@@ -1,38 +1,48 @@
-import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
 import { readDb, writeDb } from '@/lib/db';
-import { createAuditLog } from '@/lib/audit';
+import { getUserSession } from '@/lib/auth';
+import { logAudit } from '@/lib/audit';
 
-export async function GET() {
-  const session = getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export async function GET(req: NextRequest) {
+  try {
+    const session = getUserSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const db = readDb();
+    const categoriesWithCount = db.categories.map((c) => {
+      const txCount = db.transactions.filter((t) => t.categoryId === c.id).length;
+      return {
+        ...c,
+        _count: { transactions: txCount },
+      };
+    });
+
+    return NextResponse.json({ data: categoriesWithCount });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
-
-  const db = readDb();
-  const categoriesWithCount = db.categories.map((c) => {
-    const txCount = db.transactions.filter((t) => t.categoryId === c.id).length;
-    return {
-      ...c,
-      _count: { transactions: txCount },
-    };
-  });
-
-  return NextResponse.json({ data: categoriesWithCount });
 }
 
-export async function POST(request: Request) {
-  const session = getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  if (session.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Hanya Admin yang dapat mengelola kategori.' }, { status: 403 });
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    const session = getUserSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const isAuthorized =
+      session.role === 'SUPERADMIN' ||
+      session.role === 'ADMIN' ||
+      session.permissions.includes('can_manage_categories') ||
+      session.permissions.includes('can_view_categories');
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: 'Akses ditolak: Hanya Admin/Superadmin yang dapat mengelola kategori.' }, { status: 403 });
+    }
+
+    const body = await req.json();
     const { name, type } = body;
 
     if (!name || name.trim() === '') {
@@ -52,20 +62,21 @@ export async function POST(request: Request) {
     const newCategory = {
       id: `cat-${type.toLowerCase().slice(0, 3)}-${Date.now()}`,
       name: name.trim(),
-      type,
+      type: type as 'INCOME' | 'EXPENSE',
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     db.categories.push(newCategory);
     writeDb(db);
 
-    createAuditLog({
-      userId: session.id,
-      action: 'CREATE_CATEGORY',
-      module: 'CATEGORY',
-      recordId: newCategory.id,
-      description: `Menambah kategori baru: ${newCategory.name} (${type})`,
-    });
+    await logAudit(
+      'CREATE_CATEGORY',
+      'CATEGORY',
+      `Menambah kategori baru: ${newCategory.name} (${type})`,
+      session.id,
+      req.headers.get('x-forwarded-for') || '127.0.0.1'
+    );
 
     return NextResponse.json({ message: 'Kategori berhasil dibuat', data: newCategory }, { status: 201 });
   } catch (err: any) {
