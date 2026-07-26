@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
     const dateTo = searchParams.get('dateTo') || '';
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const sortBy = searchParams.get('sortBy') || 'transactionDate';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     const where: any = {};
     if (type) where.type = type;
@@ -38,11 +40,23 @@ export async function GET(req: NextRequest) {
       ];
     }
 
+    const validSortBy = ['transactionDate', 'type', 'amount', 'categoryName'];
+    const validSortOrder = ['asc', 'desc'];
+    const actualSortBy = validSortBy.includes(sortBy) ? sortBy : 'transactionDate';
+    const actualSortOrder = validSortOrder.includes(sortOrder) ? sortOrder : 'desc';
+
+    let orderBy: any;
+    if (actualSortBy === 'categoryName') {
+      orderBy = { category: { name: actualSortOrder as 'asc' | 'desc' } };
+    } else {
+      orderBy = { [actualSortBy]: actualSortOrder };
+    }
+
     const [items, total] = await Promise.all([
       prisma.transaction.findMany({
         where,
         include: { category: { select: { id: true, name: true, type: true } }, user: { select: { id: true, name: true, userCode: true } } },
-        orderBy: { transactionDate: 'desc' },
+        orderBy,
         skip: (page - 1) * limit,
         take: limit,
       }),

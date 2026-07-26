@@ -9,6 +9,8 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Loader2,
   X,
   Lock,
@@ -37,6 +39,9 @@ export default function TransactionsPage() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+
+  const [sortBy, setSortBy] = useState('transactionDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -75,6 +80,8 @@ export default function TransactionsPage() {
         ...(categoryFilter && { categoryId: categoryFilter }),
         ...(dateFrom && { dateFrom }),
         ...(dateTo && { dateTo }),
+        ...(sortBy && { sortBy }),
+        ...(sortOrder && { sortOrder }),
       });
 
       const res = await fetch(`/api/transactions?${query.toString()}`);
@@ -97,7 +104,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     fetchTransactions();
-  }, [page, search, typeFilter, categoryFilter, dateFrom, dateTo]);
+  }, [page, search, typeFilter, categoryFilter, dateFrom, dateTo, sortBy, sortOrder]);
 
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPERADMIN';
 
@@ -127,6 +134,25 @@ export default function TransactionsPage() {
     setDateFrom('');
     setDateTo('');
     setPage(1);
+  };
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(column);
+      setSortOrder(column === 'transactionDate' ? 'desc' : 'asc');
+    }
+    setPage(1);
+  };
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortBy !== column) return null;
+    return sortOrder === 'asc' ? (
+      <ChevronUp className="w-3 h-3 inline-block ml-0.5" />
+    ) : (
+      <ChevronDown className="w-3 h-3 inline-block ml-0.5" />
+    );
   };
 
   const hasActiveFilters = Boolean(search || typeFilter || categoryFilter || dateFrom || dateTo);
@@ -164,83 +190,134 @@ export default function TransactionsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className={`vercel-card p-4 space-y-3 ${showMobileFilter ? 'block' : 'hidden sm:block'}`}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          <div className="relative flex items-center">
-            <Search className="w-4 h-4 text-[#888888] dark:text-[#737373] absolute left-3 pointer-events-none shrink-0" />
+      <div className="hidden sm:block border-b border-[#ebebeb] dark:border-[#262626] pb-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[180px]">
+            <label className="block font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] uppercase tracking-wider mb-1">Pencarian</label>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-[#888888] dark:text-[#737373] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Cari keterangan..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="w-full vercel-input pl-8 pr-3 py-2 text-xs"
+              />
+            </div>
+          </div>
+          <div className="min-w-[150px]">
+            <label className="block font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] uppercase tracking-wider mb-1">Jenis Transaksi</label>
+            <select
+              value={typeFilter}
+              onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+              className="vercel-input text-xs w-full"
+            >
+              <option value="">Semua Jenis</option>
+              <option value="INCOME">Pemasukan</option>
+              <option value="EXPENSE">Pengeluaran</option>
+            </select>
+          </div>
+          <div className="min-w-[150px]">
+            <label className="block font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] uppercase tracking-wider mb-1">Kategori</label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+              className="vercel-input text-xs w-full"
+            >
+              <option value="">Semua Kategori</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="min-w-[130px]">
+            <label className="block font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] uppercase tracking-wider mb-1">Dari Tgl</label>
             <input
-              type="text"
-              placeholder="Cari keterangan / nominal..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full vercel-input pl-9 pr-3 py-2 text-xs"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+              className="vercel-input text-xs w-full font-mono"
             />
           </div>
-
-          <select
-            value={typeFilter}
-            onChange={(e) => {
-              setTypeFilter(e.target.value);
-              setPage(1);
-            }}
-            className="vercel-input text-xs w-full"
-          >
-            <option value="">Semua Jenis (Income / Expense)</option>
-            <option value="INCOME">Pemasukan (Income)</option>
-            <option value="EXPENSE">Pengeluaran (Expense)</option>
-          </select>
-
-          <select
-            value={categoryFilter}
-            onChange={(e) => {
-              setCategoryFilter(e.target.value);
-              setPage(1);
-            }}
-            className="vercel-input text-xs w-full"
-          >
-            <option value="">Semua Kategori</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.type})
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => {
-              setDateFrom(e.target.value);
-              setPage(1);
-            }}
-            className="vercel-input text-xs w-full font-mono"
-          />
-
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => {
-              setDateTo(e.target.value);
-              setPage(1);
-            }}
-            className="vercel-input text-xs w-full font-mono"
-          />
-        </div>
-
-        {hasActiveFilters && (
-          <div className="flex justify-end pt-1">
-            <button
-              onClick={handleResetFilters}
-              className="font-caption-mono text-xs text-[#ee0000] hover:underline flex items-center gap-1 font-semibold"
-            >
-              <X className="w-3 h-3" />
-              <span>Reset Filter</span>
-            </button>
+          <div className="min-w-[130px]">
+            <label className="block font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] uppercase tracking-wider mb-1">Sampai Tgl</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+              className="vercel-input text-xs w-full font-mono"
+            />
           </div>
-        )}
+          {hasActiveFilters && (
+            <div className="flex items-end pb-0.5">
+              <button
+                onClick={handleResetFilters}
+                className="font-caption-mono text-[11px] text-[#ee0000] hover:underline flex items-center gap-1 font-semibold pb-2 px-2"
+              >
+                <X className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Filter Drawer */}
+      <div className={`sm:hidden border-b border-[#ebebeb] dark:border-[#262626] pb-4 ${showMobileFilter ? 'block' : 'hidden'}`}>
+        <div className="space-y-3">
+          <div>
+            <label className="block font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] uppercase tracking-wider mb-1">Pencarian</label>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-[#888888] dark:text-[#737373] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Cari keterangan..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="w-full vercel-input pl-8 pr-3 py-2 text-xs"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <select
+              value={typeFilter}
+              onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+              className="vercel-input text-xs w-full"
+            >
+              <option value="">Semua Jenis</option>
+              <option value="INCOME">Pemasukan</option>
+              <option value="EXPENSE">Pengeluaran</option>
+            </select>
+            <select
+              value={categoryFilter}
+              onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+              className="vercel-input text-xs w-full"
+            >
+              <option value="">Semua Kategori</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] mb-1">Dari</label>
+              <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} className="vercel-input text-xs w-full font-mono" />
+            </div>
+            <div>
+              <label className="block font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] mb-1">Sampai</label>
+              <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} className="vercel-input text-xs w-full font-mono" />
+            </div>
+          </div>
+          {hasActiveFilters && (
+            <div className="flex justify-end">
+              <button onClick={handleResetFilters} className="font-caption-mono text-xs text-[#ee0000] hover:underline flex items-center gap-1 font-semibold">
+                <X className="w-3 h-3" />
+                <span>Reset Filter</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Mobile Feed */}
@@ -331,11 +408,19 @@ export default function TransactionsPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-[#ebebeb] dark:border-[#262626] font-caption-mono text-[11px] text-[#888888] dark:text-[#a1a1a1] uppercase tracking-wider bg-[#fafafa] dark:bg-[#000000]">
-                <th className="py-3 px-4">TANGGAL</th>
-                <th className="py-3 px-4">JENIS</th>
-                <th className="py-3 px-4">KATEGORI</th>
+                <th className="py-3 px-4 cursor-pointer select-none hover:text-[#171717] dark:hover:text-[#ffffff] transition-colors" onClick={() => handleSort('transactionDate')}>
+                  <span className="inline-flex items-center">TANGGAL <SortIcon column="transactionDate" /></span>
+                </th>
+                <th className="py-3 px-4 cursor-pointer select-none hover:text-[#171717] dark:hover:text-[#ffffff] transition-colors" onClick={() => handleSort('type')}>
+                  <span className="inline-flex items-center">JENIS <SortIcon column="type" /></span>
+                </th>
+                <th className="py-3 px-4 cursor-pointer select-none hover:text-[#171717] dark:hover:text-[#ffffff] transition-colors" onClick={() => handleSort('categoryName')}>
+                  <span className="inline-flex items-center">KATEGORI <SortIcon column="categoryName" /></span>
+                </th>
                 <th className="py-3 px-4">KETERANGAN</th>
-                <th className="py-3 px-4 text-right">NOMINAL</th>
+                <th className="py-3 px-4 text-right cursor-pointer select-none hover:text-[#171717] dark:hover:text-[#ffffff] transition-colors" onClick={() => handleSort('amount')}>
+                  <span className="inline-flex items-center justify-end">NOMINAL <SortIcon column="amount" /></span>
+                </th>
                 <th className="py-3 px-4 text-center">LAMPIRAN</th>
                 {isAdmin && <th className="py-3 px-4 text-center">AKSI</th>}
               </tr>
