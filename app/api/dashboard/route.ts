@@ -1,20 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import { readDb } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { DashboardSummary } from '@/lib/types';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const session = getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const db = readDb();
-  const transactions = [...db.transactions];
+  const transactions = await prisma.transaction.findMany({
+    include: { category: true, user: { select: { id: true, name: true, userCode: true } } },
+    orderBy: { transactionDate: 'desc' },
+  });
 
   let totalIncome = 0;
   let totalExpense = 0;
-
   transactions.forEach((t) => {
     const amt = Number(t.amount);
     if (t.type === 'INCOME') totalIncome += amt;
@@ -22,36 +23,14 @@ export async function GET() {
   });
 
   const balance = totalIncome - totalExpense;
+  const recentTransactions = transactions.slice(0, 5);
 
-  // Recent 5 transactions
-  const sorted = [...transactions]
-    .sort((a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime())
-    .map((t) => ({
-      ...t,
-      category: db.categories.find((c) => c.id === t.categoryId),
-      user: db.users.find((u) => u.id === t.userId),
-    }));
-
-  const recentTransactions = sorted.slice(0, 5);
-
-  // Group by Date for Line Chart (Balance / Income / Expense trend)
+  // Line chart grouped by date
   const dateMap: { [key: string]: { income: number; expense: number } } = {};
-
-  // Sort chronological for charts
-  const chronoTrx = [...transactions].sort(
-    (a, b) => new Date(a.transactionDate).getTime() - new Date(b.transactionDate).getTime()
-  );
-
+  const chronoTrx = [...transactions].sort((a, b) => new Date(a.transactionDate).getTime() - new Date(b.transactionDate).getTime());
   chronoTrx.forEach((t) => {
-    const dateStr = new Date(t.transactionDate).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-    });
-
-    if (!dateMap[dateStr]) {
-      dateMap[dateStr] = { income: 0, expense: 0 };
-    }
-
+    const dateStr = new Date(t.transactionDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    if (!dateMap[dateStr]) dateMap[dateStr] = { income: 0, expense: 0 };
     if (t.type === 'INCOME') dateMap[dateStr].income += Number(t.amount);
     else dateMap[dateStr].expense += Number(t.amount);
   });
@@ -61,39 +40,27 @@ export async function GET() {
     const inc = dateMap[dateKey].income;
     const exp = dateMap[dateKey].expense;
     runningBalance += inc - exp;
-
-    return {
-      date: dateKey,
-      income: inc,
-      expense: exp,
-      balance: runningBalance,
-    };
+    return { date: dateKey, income: inc, expense: exp, balance: runningBalance };
   });
 
-  // Expense breakdown by category (Pie chart)
+  // Expense by category
   const expCategoryMap: { [catName: string]: number } = {};
-  transactions
-    .filter((t) => t.type === 'EXPENSE')
-    .forEach((t) => {
-      const catName = db.categories.find((c) => c.id === t.categoryId)?.name || 'Lain-lain';
-      expCategoryMap[catName] = (expCategoryMap[catName] || 0) + Number(t.amount);
-    });
-
+  transactions.filter((t) => t.type === 'EXPENSE').forEach((t) => {
+    const catName = t.category?.name || 'Lain-lain';
+    expCategoryMap[catName] = (expCategoryMap[catName] || 0) + Number(t.amount);
+  });
   const expenseByCategory = Object.keys(expCategoryMap).map((catName) => ({
     name: catName,
     value: expCategoryMap[catName],
     percentage: totalExpense > 0 ? Math.round((expCategoryMap[catName] / totalExpense) * 100) : 0,
   }));
 
-  // Income breakdown by category (Donut chart)
+  // Income by category
   const incCategoryMap: { [catName: string]: number } = {};
-  transactions
-    .filter((t) => t.type === 'INCOME')
-    .forEach((t) => {
-      const catName = db.categories.find((c) => c.id === t.categoryId)?.name || 'Lain-lain';
-      incCategoryMap[catName] = (incCategoryMap[catName] || 0) + Number(t.amount);
-    });
-
+  transactions.filter((t) => t.type === 'INCOME').forEach((t) => {
+    const catName = t.category?.name || 'Lain-lain';
+    incCategoryMap[catName] = (incCategoryMap[catName] || 0) + Number(t.amount);
+  });
   const incomeByCategory = Object.keys(incCategoryMap).map((catName) => ({
     name: catName,
     value: incCategoryMap[catName],

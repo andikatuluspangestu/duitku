@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { getUserSession } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
     const session = getUserSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search')?.toLowerCase() || '';
@@ -19,64 +19,39 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '10', 10);
 
-    const db = readDb();
-
-    // Populate relational objects FIRST
-    let items = db.transactions.map((t) => {
-      const cat = db.categories.find((c) => c.id === t.categoryId);
-      const usr = db.users.find((u) => u.id === t.userId);
-      return {
-        ...t,
-        category: cat ? { id: cat.id, name: cat.name, type: cat.type } : undefined,
-        user: usr ? { id: usr.id, name: usr.name, userCode: usr.userCode } : undefined,
-      };
-    });
-
-    // Filtering
+    const where: any = {};
+    if (type) where.type = type;
+    if (categoryId) where.categoryId = categoryId;
+    if (dateFrom || dateTo) {
+      where.transactionDate = {};
+      if (dateFrom) where.transactionDate.gte = new Date(dateFrom);
+      if (dateTo) {
+        const endOfDay = new Date(dateTo);
+        endOfDay.setHours(23, 59, 59, 999);
+        where.transactionDate.lte = endOfDay;
+      }
+    }
     if (search) {
-      items = items.filter(
-        (t) =>
-          t.description?.toLowerCase().includes(search) ||
-          t.category?.name.toLowerCase().includes(search) ||
-          t.amount.toString().includes(search)
-      );
+      where.OR = [
+        { description: { contains: search, mode: 'insensitive' } },
+        { category: { name: { contains: search, mode: 'insensitive' } } },
+      ];
     }
 
-    if (type) {
-      items = items.filter((t) => t.type === type);
-    }
-
-    if (categoryId) {
-      items = items.filter((t) => t.categoryId === categoryId);
-    }
-
-    if (dateFrom) {
-      items = items.filter((t) => new Date(t.transactionDate) >= new Date(dateFrom));
-    }
-
-    if (dateTo) {
-      const endOfDay = new Date(dateTo);
-      endOfDay.setHours(23, 59, 59, 999);
-      items = items.filter((t) => new Date(t.transactionDate) <= endOfDay);
-    }
-
-    // Sort descending by transactionDate
-    items.sort((a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime());
-
-    // Pagination
-    const total = items.length;
-    const totalPages = Math.ceil(total / limit) || 1;
-    const startIndex = (page - 1) * limit;
-    const paginatedItems = items.slice(startIndex, startIndex + limit);
+    const [items, total] = await Promise.all([
+      prisma.transaction.findMany({
+        where,
+        include: { category: true, user: { select: { id: true, name: true, userCode: true } } },
+        orderBy: { transactionDate: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.transaction.count({ where }),
+    ]);
 
     return NextResponse.json({
-      data: paginatedItems,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages,
-      },
+      data: items,
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) || 1 },
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -86,76 +61,41 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = getUserSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const isAuthorized =
-      session.role === 'SUPERADMIN' ||
-      session.role === 'ADMIN' ||
-      session.permissions.includes('can_view_transactions');
-
-    if (!isAuthorized) {
-      return NextResponse.json({ error: 'Akses ditolak: Hanya Admin/Superadmin yang dapat menambah transaksi.' }, { status: 403 });
-    }
+    const isAuthorized = session.role === 'SUPERADMIN' || session.role === 'ADMIN' || session.permissions.includes('can_view_transactions');
+    if (!isAuthorized) return NextResponse.json({ error: 'Akses ditolak: Hanya Admin/Superadmin yang dapat menambah transaksi.' }, { status: 403 });
 
     const body = await req.json();
     const { type, amount, categoryId, transactionDate, description, attachmentUrl, attachmentName, attachmentSize, attachmentMimeType } = body;
 
-    // Validation
-    if (!type || !['INCOME', 'EXPENSE'].includes(type)) {
-      return NextResponse.json({ error: 'Jenis transaksi harus INCOME atau EXPENSE' }, { status: 400 });
-    }
-
+    if (!type || !['INCOME', 'EXPENSE'].includes(type)) return NextResponse.json({ error: 'Jenis transaksi harus INCOME atau EXPENSE' }, { status: 400 });
     const numericAmount = Number(amount);
-    if (isNaN(numericAmount) || numericAmount < 1) {
-      return NextResponse.json({ error: 'Nominal transaksi harus berupa angka minimal Rp 1' }, { status: 400 });
-    }
+    if (isNaN(numericAmount) || numericAmount < 1) return NextResponse.json({ error: 'Nominal transaksi harus berupa angka minimal Rp 1' }, { status: 400 });
+    if (!categoryId) return NextResponse.json({ error: 'Kategori transaksi wajib dipilih' }, { status: 400 });
+    if (!transactionDate) return NextResponse.json({ error: 'Tanggal transaksi wajib diisi' }, { status: 400 });
+    if (description && description.length > 255) return NextResponse.json({ error: 'Keterangan maksimal 255 karakter' }, { status: 400 });
 
-    if (!categoryId) {
-      return NextResponse.json({ error: 'Kategori transaksi wajib dipilih' }, { status: 400 });
-    }
+    const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
+    if (!categoryExists) return NextResponse.json({ error: 'Kategori tidak ditemukan' }, { status: 404 });
 
-    if (!transactionDate) {
-      return NextResponse.json({ error: 'Tanggal transaksi wajib diisi' }, { status: 400 });
-    }
+    const newTransaction = await prisma.transaction.create({
+      data: {
+        type,
+        amount: numericAmount,
+        description: description || null,
+        transactionDate: new Date(transactionDate),
+        attachmentUrl: attachmentUrl || null,
+        attachmentName: attachmentName || null,
+        attachmentSize: attachmentSize || null,
+        attachmentMimeType: attachmentMimeType || null,
+        userId: session.id,
+        categoryId,
+      },
+      include: { category: true, user: { select: { id: true, name: true, userCode: true } } },
+    });
 
-    if (description && description.length > 255) {
-      return NextResponse.json({ error: 'Keterangan maksimal 255 karakter' }, { status: 400 });
-    }
-
-    const db = readDb();
-    const categoryExists = db.categories.find((c) => c.id === categoryId);
-    if (!categoryExists) {
-      return NextResponse.json({ error: 'Kategori tidak ditemukan' }, { status: 404 });
-    }
-
-    const newTransaction = {
-      id: `trx-${Date.now()}`,
-      type: type as 'INCOME' | 'EXPENSE',
-      amount: numericAmount,
-      description: description || null,
-      transactionDate: new Date(transactionDate).toISOString(),
-      attachmentUrl: attachmentUrl || null,
-      attachmentName: attachmentName || null,
-      attachmentSize: attachmentSize || null,
-      attachmentMimeType: attachmentMimeType || null,
-      userId: session.id,
-      categoryId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    db.transactions.unshift(newTransaction);
-    writeDb(db);
-
-    await logAudit(
-      'CREATE_TRANSACTION',
-      'TRANSACTION',
-      `Menambah transaksi ${type} sebesar Rp ${numericAmount.toLocaleString('id-ID')} (${categoryExists.name})`,
-      session.id,
-      req.headers.get('x-forwarded-for') || '127.0.0.1'
-    );
+    await logAudit('CREATE_TRANSACTION', 'TRANSACTION', `Menambah transaksi ${type} sebesar Rp ${numericAmount.toLocaleString('id-ID')} (${categoryExists.name})`, session.id, req.headers.get('x-forwarded-for') || '127.0.0.1');
 
     return NextResponse.json({ message: 'Transaksi berhasil disimpan', data: newTransaction }, { status: 201 });
   } catch (err: any) {

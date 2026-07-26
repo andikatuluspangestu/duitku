@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { readDb, writeDb } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { getUserSession, setUserSession } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
 
@@ -9,24 +9,19 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const session = getUserSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const db = readDb();
-    const user = db.users.find((u) => u.id === session.id);
-    if (!user) {
-      return NextResponse.json({ error: 'Pengguna tidak ditemukan' }, { status: 404 });
-    }
+    const user = await prisma.user.findUnique({ where: { id: session.id } });
+    if (!user) return NextResponse.json({ error: 'Pengguna tidak ditemukan' }, { status: 404 });
 
     return NextResponse.json({
       data: {
         id: user.id,
         name: user.name,
-        userCode: user.userCode || 'USR001',
+        userCode: user.userCode,
         role: user.role,
         isActive: user.isActive,
-        permissions: user.permissions || [],
+        permissions: user.permissions,
         createdAt: user.createdAt,
       },
     });
@@ -38,72 +33,36 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const session = getUserSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
     const { name, currentPassword, newPassword } = body;
 
-    const db = readDb();
-    const userIndex = db.users.findIndex((u) => u.id === session.id);
-    if (userIndex === -1) {
-      return NextResponse.json({ error: 'Pengguna tidak ditemukan' }, { status: 404 });
-    }
+    const user = await prisma.user.findUnique({ where: { id: session.id } });
+    if (!user) return NextResponse.json({ error: 'Pengguna tidak ditemukan' }, { status: 404 });
 
-    const user = db.users[userIndex];
+    const updateData: any = {};
 
-    // If changing password, verify current password first
     if (newPassword) {
-      if (!currentPassword) {
-        return NextResponse.json({ error: 'Password saat ini wajib diisi untuk mengubah password' }, { status: 400 });
-      }
-
-      const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
-      if (!isValidPassword) {
-        return NextResponse.json({ error: 'Password saat ini tidak cocok' }, { status: 400 });
-      }
-
-      if (newPassword.length < 6) {
-        return NextResponse.json({ error: 'Password baru minimal 6 karakter' }, { status: 400 });
-      }
-
-      user.passwordHash = await bcrypt.hash(newPassword, 10);
+      if (!currentPassword) return NextResponse.json({ error: 'Password saat ini wajib diisi untuk mengubah password' }, { status: 400 });
+      const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isValid) return NextResponse.json({ error: 'Password saat ini tidak cocok' }, { status: 400 });
+      if (newPassword.length < 6) return NextResponse.json({ error: 'Password baru minimal 6 karakter' }, { status: 400 });
+      updateData.passwordHash = await bcrypt.hash(newPassword, 10);
     }
 
-    if (name && name.trim()) {
-      user.name = name.trim();
-    }
+    if (name && name.trim()) updateData.name = name.trim();
 
-    user.updatedAt = new Date().toISOString();
-    db.users[userIndex] = user;
-    writeDb(db);
+    const updated = await prisma.user.update({ where: { id: session.id }, data: updateData });
 
-    // Update Session Cookie with new name
-    const updatedSession = {
-      ...session,
-      name: user.name,
-    };
-    setUserSession(updatedSession);
+    setUserSession({ ...session, name: updated.name });
 
-    await logAudit(
-      'UPDATE_PROFILE',
-      'USER',
-      `Mengubah profil akun: ${user.name} (${user.userCode})`,
-      session.id,
-      req.headers.get('x-forwarded-for') || '127.0.0.1'
-    );
+    await logAudit('UPDATE_PROFILE', 'USER', `Mengubah profil akun: ${updated.name} (${updated.userCode})`, session.id, req.headers.get('x-forwarded-for') || '127.0.0.1');
 
     return NextResponse.json({
       success: true,
       message: 'Profil berhasil diperbarui',
-      user: {
-        id: user.id,
-        name: user.name,
-        userCode: user.userCode,
-        role: user.role,
-        permissions: user.permissions,
-      },
+      user: { id: updated.id, name: updated.name, userCode: updated.userCode, role: updated.role, permissions: updated.permissions },
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
