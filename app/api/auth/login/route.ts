@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { createToken } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
+import type { Role } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
       id: user.id,
       name: user.name,
       userCode: user.userCode,
-      role: user.role,
+      role: user.role as Role,
       permissions: user.permissions,
     };
 

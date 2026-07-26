@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
-import { UserSession } from './types';
+import { UserSession, Role } from './types';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'simple_finance_secret_key_change_me_in_prod';
 
@@ -71,7 +71,7 @@ export function getUserSession(): UserSession | null {
       id: decoded.id,
       name: decoded.name,
       userCode: decoded.userCode || decoded.email || 'USR001',
-      role: decoded.role,
+      role: decoded.role as Role,
       permissions: decoded.permissions || [],
     };
   } catch (err) {
