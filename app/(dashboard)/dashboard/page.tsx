@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, FileText, Loader2 } from 'lucide-react';
 import { StatCards } from '@/components/dashboard/StatCards';
 import { ProofViewerModal } from '@/components/transaction/ProofViewerModal';
+import { PwaInstallBanner } from '@/components/ui/PwaInstallBanner';
 import { DashboardSummary, TransactionItem } from '@/lib/types';
 import { formatDate, formatRupiah } from '@/lib/utils';
 import { useToast } from '@/components/ui/ToastContext';
@@ -46,7 +47,10 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
-      {/* 3 Summary Stat Cards (Top Section Removed) */}
+      {/* Dedicated PWA Application Install Banner */}
+      <PwaInstallBanner />
+
+      {/* 3 Summary Stat Cards */}
       <StatCards
         totalIncome={data.totalIncome}
         totalExpense={data.totalExpense}
