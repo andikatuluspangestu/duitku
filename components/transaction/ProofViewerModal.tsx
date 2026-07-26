@@ -18,7 +18,10 @@ export const ProofViewerModal: React.FC<ProofViewerModalProps> = ({
 }) => {
   if (!isOpen || !transaction || !transaction.attachmentUrl) return null;
 
-  const isPdf = transaction.attachmentMimeType === 'application/pdf' || transaction.attachmentUrl.endsWith('.pdf');
+  const isPdf =
+    transaction.attachmentMimeType === 'application/pdf' ||
+    transaction.attachmentUrl.startsWith('data:application/pdf') ||
+    transaction.attachmentUrl.endsWith('.pdf');
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -79,4 +82,4 @@ export const ProofViewerModal: React.FC<ProofViewerModalProps> = ({
       </div>
     </div>
   );
-};
+}

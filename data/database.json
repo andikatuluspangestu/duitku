@@ -112,8 +112,104 @@
       "updatedAt": "2026-07-26T00:00:00.000Z"
     }
   ],
-  "transactions": [],
+  "transactions": [
+    {
+      "id": "trx-1785061875188",
+      "type": "INCOME",
+      "amount": 20000,
+      "description": null,
+      "transactionDate": "2026-07-26T00:00:00.000Z",
+      "attachmentUrl": "/uploads/proof_1785061863437_ina7n.png",
+      "attachmentName": "jb_logo.png",
+      "attachmentSize": 64232,
+      "attachmentMimeType": "image/png",
+      "userId": "usr_1785058127501",
+      "categoryId": "cat_penjualan",
+      "createdAt": "2026-07-26T10:31:15.188Z",
+      "updatedAt": "2026-07-26T10:31:15.188Z"
+    }
+  ],
   "auditLogs": [
+    {
+      "id": "log-1785061875297-tq2z",
+      "userId": "usr_1785058127501",
+      "user": {
+        "id": "usr_1785058127501",
+        "name": "Farkhana Mutia",
+        "userCode": "USR002"
+      },
+      "action": "CREATE_TRANSACTION",
+      "module": "TRANSACTION",
+      "recordId": null,
+      "description": "Menambah transaksi INCOME sebesar Rp 20.000 (Penjualan Produk)",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T10:31:15.297Z"
+    },
+    {
+      "id": "log-1785061863523-j0d1",
+      "userId": "usr_1785058127501",
+      "user": {
+        "id": "usr_1785058127501",
+        "name": "Farkhana Mutia",
+        "userCode": "USR002"
+      },
+      "action": "UPLOAD_ATTACHMENT",
+      "module": "ATTACHMENT",
+      "recordId": null,
+      "description": "Mengunggah file lampiran: jb_logo.png (62.7 KB)",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T10:31:03.523Z"
+    },
+    {
+      "id": "log-1785061856707-lbns",
+      "userId": "usr_1785058127501",
+      "user": {
+        "id": "usr_1785058127501",
+        "name": "Farkhana Mutia",
+        "userCode": "USR002"
+      },
+      "action": "LOGIN",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Farkhana Mutia (USR002) berhasil login [Role: ADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T10:30:56.707Z"
+    },
+    {
+      "id": "log-1785061852016-38wg",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator",
+        "userCode": "USR001"
+      },
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Super Administrator (USR001) logout",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T10:30:52.016Z"
+    },
+    {
+      "id": "log-1785061831442-50xi",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator",
+        "userCode": "USR001"
+      },
+      "action": "LOGIN",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Super Administrator (USR001) berhasil login [Role: SUPERADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T10:30:31.442Z"
+    },
     {
       "id": "log-1785061506619-m8g6",
       "userId": "usr_master_superadmin",
