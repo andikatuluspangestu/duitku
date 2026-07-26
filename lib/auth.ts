@@ -2,7 +2,13 @@ import { cookies } from 'next/headers';
 import crypto from 'crypto';
 import { UserSession, Role } from './types';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'simple_finance_secret_key_change_me_in_prod';
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set. Set a strong random value before deploying.');
+  }
+  return secret;
+}
 
 function base64UrlEncode(str: string): string {
   return Buffer.from(str, 'utf-8')
@@ -43,7 +49,7 @@ export function createToken(user: UserSession): string {
     })
   );
 
-  const signature = signHMAC(`${header}.${payload}`, JWT_SECRET);
+  const signature = signHMAC(`${header}.${payload}`, getJwtSecret());
   return `${header}.${payload}.${signature}`;
 }
 
@@ -57,7 +63,7 @@ export function getUserSession(): UserSession | null {
     if (parts.length !== 3) return null;
 
     const [header, payload, signature] = parts;
-    const expectedSignature = signHMAC(`${header}.${payload}`, JWT_SECRET);
+    const expectedSignature = signHMAC(`${header}.${payload}`, getJwtSecret());
     if (signature !== expectedSignature) return null;
 
     const jsonStr = base64UrlDecode(payload);
