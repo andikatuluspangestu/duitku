@@ -43,10 +43,10 @@ export const Header: React.FC<HeaderProps> = ({ user, onMenuToggle }) => {
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* User Breadcrumb Link to Profile */}
+        {/* User Breadcrumb Link to Profile (Hidden on Mobile & Tablet, Desktop Only) */}
         <Link
           href="/profile"
-          className="flex items-center gap-2 text-xs font-sans hover:opacity-80 transition-opacity"
+          className="hidden lg:flex items-center gap-2 text-xs font-sans hover:opacity-80 transition-opacity"
           title="Ke Pengaturan Profil"
         >
           <span className="font-semibold text-[#171717] dark:text-[#ffffff]">{user.name}</span>

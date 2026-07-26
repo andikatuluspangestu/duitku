@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/ToastContext';
 import { ThemeProvider } from '@/components/ui/ThemeContext';
-import { PwaRegister } from '@/components/ui/PwaRegister';
 
 export const metadata: Metadata = {
   title: 'UangKasir - Aplikasi Pencatatan Kas Keuangan Sederhana',
@@ -79,7 +78,6 @@ export default function RootLayout({
         <ThemeProvider>
           <ToastProvider>
             {children}
-            <PwaRegister />
           </ToastProvider>
         </ThemeProvider>
       </body>

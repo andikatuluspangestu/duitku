@@ -115,6 +115,54 @@
   "transactions": [],
   "auditLogs": [
     {
+      "id": "log-1785061506619-m8g6",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator",
+        "userCode": "USR001"
+      },
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Super Administrator (USR001) logout",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T10:25:06.619Z"
+    },
+    {
+      "id": "log-1785061503874-yorm",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator",
+        "userCode": "USR001"
+      },
+      "action": "LOGIN",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Super Administrator (USR001) berhasil login [Role: SUPERADMIN]",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T10:25:03.874Z"
+    },
+    {
+      "id": "log-1785061466971-pf5u",
+      "userId": "usr_master_superadmin",
+      "user": {
+        "id": "usr_master_superadmin",
+        "name": "Super Administrator",
+        "userCode": "USR001"
+      },
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "recordId": null,
+      "description": "Pengguna Super Administrator (USR001) logout",
+      "ipAddress": "::1",
+      "userAgent": "Web Browser",
+      "createdAt": "2026-07-26T10:24:26.972Z"
+    },
+    {
       "id": "log-1785058698549-si27",
       "userId": "usr_1785058127501",
       "user": {

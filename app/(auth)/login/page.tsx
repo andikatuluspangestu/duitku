@@ -1,18 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
-import { LogIn, Lock, UserCheck, AlertCircle, Loader2, Sparkles, Sun, Moon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LogIn, Lock, UserCheck, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/components/ui/ToastContext';
-import { useTheme } from '@/components/ui/ThemeContext';
 
 export default function LoginPage() {
   const { showToast } = useToast();
-  const { theme, toggleTheme } = useTheme();
 
   const [userCode, setUserCode] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedCode = localStorage.getItem('uangkasir_remember_usercode');
+    if (savedCode) {
+      setUserCode(savedCode);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +43,13 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal login');
 
+      // Remember me handling
+      if (rememberMe) {
+        localStorage.setItem('uangkasir_remember_usercode', userCode.trim().toUpperCase());
+      } else {
+        localStorage.removeItem('uangkasir_remember_usercode');
+      }
+
       showToast(`Selamat datang kembali, ${data.user.name}!`, 'success');
       window.location.href = '/dashboard';
     } catch (err: any) {
@@ -49,28 +64,11 @@ export default function LoginPage() {
       {/* Vercel Atmospheric Mesh Backdrop */}
       <div className="absolute inset-0 bg-mesh-hero opacity-70 pointer-events-none" />
 
-      {/* Theme Switcher Floating Top Right */}
-      <button
-        onClick={toggleTheme}
-        className="absolute top-5 right-5 p-2.5 rounded-full border border-[#ebebeb] dark:border-[#262626] bg-[#ffffff] dark:bg-[#0a0a0a] text-[#4d4d4d] dark:text-[#a1a1a1] hover:text-[#171717] dark:hover:text-[#ffffff] transition-colors z-20"
-        title={theme === 'dark' ? 'Ganti ke Tema Terang' : 'Ganti ke Tema Gelap'}
-      >
-        {theme === 'dark' ? (
-          <Sun className="w-5 h-5 text-[#f5a623]" />
-        ) : (
-          <Moon className="w-5 h-5 text-[#0070f3]" />
-        )}
-      </button>
-
-      {/* Main Login Card - Vercel Design System ex-auth-form-card */}
-      <div className="w-full max-w-md bg-[#ffffff] dark:bg-[#0a0a0a] border border-[#ebebeb] dark:border-[#262626] rounded-xl p-7 sm:p-9 relative z-10 animate-in fade-in zoom-in duration-200">
+      {/* Clean Frameless Login Container */}
+      <div className="w-full max-w-sm relative z-10 p-2 sm:p-4 animate-in fade-in zoom-in duration-200">
         
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fafafa] dark:bg-[#171717] border border-[#ebebeb] dark:border-[#262626] text-[11px] font-caption-mono text-[#4d4d4d] dark:text-[#a1a1a1] mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-[#50e3c2]" />
-            <span>UangKasir Kas v2.0</span>
-          </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#171717] dark:text-[#ffffff]">
             UangKasir<span className="text-[#0070f3]">.</span>
           </h1>
@@ -113,14 +111,41 @@ export default function LoginPage() {
             <div className="relative flex items-center">
               <Lock className="w-4 h-4 text-[#888888] dark:text-[#737373] absolute left-3.5 pointer-events-none shrink-0 z-10" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full vercel-input !pl-10 text-sm font-sans"
+                className="w-full vercel-input !pl-10 !pr-10 text-sm font-sans"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 text-[#888888] dark:text-[#737373] hover:text-[#171717] dark:hover:text-[#ffffff] transition-colors p-1"
+                title={showPassword ? 'Sembunyikan Password' : 'Tampilkan Password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
+          </div>
+
+          {/* Ingat Saya Checkbox */}
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded text-[#0070f3] bg-[#ffffff] dark:bg-[#000000] border-[#ebebeb] dark:border-[#262626] focus:ring-0 cursor-pointer"
+              />
+              <span className="font-caption-mono text-xs text-[#4d4d4d] dark:text-[#a1a1a1] font-semibold">
+                Ingat Saya
+              </span>
+            </label>
           </div>
 
           <button
