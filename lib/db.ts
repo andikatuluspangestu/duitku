@@ -31,21 +31,28 @@ export interface LocalDbData {
     categoryId: string;
     userId: string;
     transactionDate: string;
-    description?: string;
-    attachmentUrl?: string;
-    attachmentName?: string;
-    attachmentSize?: number;
-    attachmentMimeType?: string;
+    description?: string | null;
+    attachmentUrl?: string | null;
+    attachmentName?: string | null;
+    attachmentSize?: number | null;
+    attachmentMimeType?: string | null;
     createdAt: string;
     updatedAt: string;
   }>;
   auditLogs: Array<{
     id: string;
-    userId?: string;
+    userId?: string | null;
+    user?: {
+      id: string;
+      name: string;
+      userCode: string;
+    } | null;
     action: string;
     module: string;
-    description?: string;
-    ipAddress?: string;
+    recordId?: string | null;
+    description?: string | null;
+    ipAddress?: string | null;
+    userAgent?: string | null;
     createdAt: string;
   }>;
 }

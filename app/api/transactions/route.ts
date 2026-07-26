@@ -1,98 +1,105 @@
-import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
 import { readDb, writeDb } from '@/lib/db';
-import { createAuditLog } from '@/lib/audit';
+import { getUserSession } from '@/lib/auth';
+import { logAudit } from '@/lib/audit';
 
-export async function GET(request: Request) {
-  const session = getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export async function GET(req: NextRequest) {
+  try {
+    const session = getUserSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const search = searchParams.get('search')?.toLowerCase() || '';
+    const type = searchParams.get('type') || '';
+    const categoryId = searchParams.get('categoryId') || '';
+    const dateFrom = searchParams.get('dateFrom') || '';
+    const dateTo = searchParams.get('dateTo') || '';
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
+
+    const db = readDb();
+
+    // Populate relational objects FIRST
+    let items = db.transactions.map((t) => {
+      const cat = db.categories.find((c) => c.id === t.categoryId);
+      const usr = db.users.find((u) => u.id === t.userId);
+      return {
+        ...t,
+        category: cat ? { id: cat.id, name: cat.name, type: cat.type } : undefined,
+        user: usr ? { id: usr.id, name: usr.name, userCode: usr.userCode } : undefined,
+      };
+    });
+
+    // Filtering
+    if (search) {
+      items = items.filter(
+        (t) =>
+          t.description?.toLowerCase().includes(search) ||
+          t.category?.name.toLowerCase().includes(search) ||
+          t.amount.toString().includes(search)
+      );
+    }
+
+    if (type) {
+      items = items.filter((t) => t.type === type);
+    }
+
+    if (categoryId) {
+      items = items.filter((t) => t.categoryId === categoryId);
+    }
+
+    if (dateFrom) {
+      items = items.filter((t) => new Date(t.transactionDate) >= new Date(dateFrom));
+    }
+
+    if (dateTo) {
+      const endOfDay = new Date(dateTo);
+      endOfDay.setHours(23, 59, 59, 999);
+      items = items.filter((t) => new Date(t.transactionDate) <= endOfDay);
+    }
+
+    // Sort descending by transactionDate
+    items.sort((a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime());
+
+    // Pagination
+    const total = items.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const startIndex = (page - 1) * limit;
+    const paginatedItems = items.slice(startIndex, startIndex + limit);
+
+    return NextResponse.json({
+      data: paginatedItems,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
-
-  const { searchParams } = new URL(request.url);
-  const search = searchParams.get('search')?.toLowerCase() || '';
-  const type = searchParams.get('type') || '';
-  const categoryId = searchParams.get('categoryId') || '';
-  const dateFrom = searchParams.get('dateFrom') || '';
-  const dateTo = searchParams.get('dateTo') || '';
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const limit = parseInt(searchParams.get('limit') || '10', 10);
-
-  const db = readDb();
-  let items = [...db.transactions];
-
-  // Filtering
-  if (search) {
-    items = items.filter(
-      (t) =>
-        t.description?.toLowerCase().includes(search) ||
-        t.category?.name.toLowerCase().includes(search) ||
-        t.amount.toString().includes(search)
-    );
-  }
-
-  if (type) {
-    items = items.filter((t) => t.type === type);
-  }
-
-  if (categoryId) {
-    items = items.filter((t) => t.categoryId === categoryId);
-  }
-
-  if (dateFrom) {
-    items = items.filter((t) => new Date(t.transactionDate) >= new Date(dateFrom));
-  }
-
-  if (dateTo) {
-    const endOfDay = new Date(dateTo);
-    endOfDay.setHours(23, 59, 59, 999);
-    items = items.filter((t) => new Date(t.transactionDate) <= endOfDay);
-  }
-
-  // Populate relational objects
-  items = items.map((t) => {
-    const cat = db.categories.find((c) => c.id === t.categoryId);
-    const usr = db.users.find((u) => u.id === t.userId);
-    return {
-      ...t,
-      category: cat ? { id: cat.id, name: cat.name, type: cat.type } : undefined,
-      user: usr ? { id: usr.id, name: usr.name, email: usr.email } : undefined,
-    };
-  });
-
-  // Sort descending by transactionDate
-  items.sort((a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime());
-
-  // Pagination
-  const total = items.length;
-  const totalPages = Math.ceil(total / limit) || 1;
-  const startIndex = (page - 1) * limit;
-  const paginatedItems = items.slice(startIndex, startIndex + limit);
-
-  return NextResponse.json({
-    data: paginatedItems,
-    pagination: {
-      total,
-      page,
-      limit,
-      totalPages,
-    },
-  });
 }
 
-export async function POST(request: Request) {
-  const session = getSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  // Enforce ADMIN role requirement
-  if (session.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Hanya Admin yang dapat menambah transaksi.' }, { status: 403 });
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    const session = getUserSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const isAuthorized =
+      session.role === 'SUPERADMIN' ||
+      session.role === 'ADMIN' ||
+      session.permissions.includes('can_view_transactions');
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: 'Akses ditolak: Hanya Admin/Superadmin yang dapat menambah transaksi.' }, { status: 403 });
+    }
+
+    const body = await req.json();
     const { type, amount, categoryId, transactionDate, description, attachmentUrl, attachmentName, attachmentSize, attachmentMimeType } = body;
 
     // Validation
@@ -125,7 +132,7 @@ export async function POST(request: Request) {
 
     const newTransaction = {
       id: `trx-${Date.now()}`,
-      type,
+      type: type as 'INCOME' | 'EXPENSE',
       amount: numericAmount,
       description: description || null,
       transactionDate: new Date(transactionDate).toISOString(),
@@ -142,13 +149,13 @@ export async function POST(request: Request) {
     db.transactions.unshift(newTransaction);
     writeDb(db);
 
-    createAuditLog({
-      userId: session.id,
-      action: 'CREATE_TRANSACTION',
-      module: 'TRANSACTION',
-      recordId: newTransaction.id,
-      description: `Menambah transaksi ${type} sebesar Rp ${numericAmount.toLocaleString('id-ID')} (${categoryExists.name})`,
-    });
+    await logAudit(
+      'CREATE_TRANSACTION',
+      'TRANSACTION',
+      `Menambah transaksi ${type} sebesar Rp ${numericAmount.toLocaleString('id-ID')} (${categoryExists.name})`,
+      session.id,
+      req.headers.get('x-forwarded-for') || '127.0.0.1'
+    );
 
     return NextResponse.json({ message: 'Transaksi berhasil disimpan', data: newTransaction }, { status: 201 });
   } catch (err: any) {

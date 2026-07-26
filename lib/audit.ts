@@ -1,4 +1,5 @@
 import { readDb, writeDb } from './db';
+import { AuditLogItem } from './types';
 
 export function createAuditLog(params: {
   userId?: string | null;
@@ -13,14 +14,14 @@ export function createAuditLog(params: {
     const db = readDb();
     const userObj = params.userId ? db.users.find((u) => u.id === params.userId) : null;
     
-    const newLog = {
+    const newLog: AuditLogItem = {
       id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       userId: params.userId || null,
       user: userObj
         ? {
             id: userObj.id,
             name: userObj.name,
-            email: userObj.email,
+            userCode: userObj.userCode || 'USR001',
           }
         : null,
       action: params.action,

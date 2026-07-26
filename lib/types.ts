@@ -56,11 +56,17 @@ export interface TransactionItem {
 export interface AuditLogItem {
   id: string;
   userId?: string | null;
-  user?: UserItem | null;
+  user?: {
+    id: string;
+    name: string;
+    userCode: string;
+  } | null;
   action: string;
   module: string;
+  recordId?: string | null;
   description?: string | null;
   ipAddress?: string | null;
+  userAgent?: string | null;
   createdAt: string;
 }
 
