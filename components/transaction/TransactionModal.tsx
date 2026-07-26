@@ -23,6 +23,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const { showToast } = useToast();
   const [type, setType] = useState<TransactionType>('INCOME');
   const [amount, setAmount] = useState<string>('');
+  const [rawAmount, setRawAmount] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [transactionDate, setTransactionDate] = useState<string>('');
   const [description, setDescription] = useState<string>('');
@@ -39,7 +40,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   useEffect(() => {
     if (initialData) {
       setType(initialData.type);
-      setAmount(initialData.amount.toString());
+      setRawAmount(initialData.amount.toString());
+      setAmount(new Intl.NumberFormat('id-ID').format(initialData.amount));
       setCategoryId(initialData.categoryId);
       setTransactionDate(initialData.transactionDate.split('T')[0]);
       setDescription(initialData.description || '');
@@ -50,6 +52,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     } else {
       setType('INCOME');
       setAmount('');
+      setRawAmount('');
       setCategoryId('');
       setTransactionDate(new Date().toISOString().split('T')[0]);
       setDescription('');
@@ -106,7 +109,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!amount || Number(amount) < 1) {
+    if (!rawAmount || Number(rawAmount) < 1) {
       setErrorMsg('Nominal transaksi minimal Rp 1');
       return;
     }
@@ -126,7 +129,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     try {
       const payload = {
         type,
-        amount: Number(amount),
+        amount: Number(rawAmount),
         categoryId,
         transactionDate,
         description: description || undefined,
@@ -276,12 +279,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           <div className="relative flex items-center">
             <span className="absolute left-4 font-mono font-bold text-lg text-[#888888] dark:text-[#a1a1a1]">Rp</span>
             <input
-              type="number"
-              min="1"
+              type="text"
+              inputMode="numeric"
               required
               placeholder="0"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '');
+                setRawAmount(digits);
+                setAmount(digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '');
+              }}
               className="w-full bg-[#ffffff] dark:bg-[#0a0a0a] border-2 border-[#ebebeb] dark:border-[#262626] rounded-2xl pl-12 pr-4 py-3.5 text-xl font-bold font-mono text-[#171717] dark:text-[#ffffff] focus:outline-none focus:border-[#0070f3] dark:focus:border-[#50e3c2] transition-colors"
             />
           </div>

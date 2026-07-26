@@ -25,6 +25,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [type, setType] = useState<TransactionType>('INCOME');
   const [amount, setAmount] = useState<string>('');
+  const [rawAmount, setRawAmount] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [transactionDate, setTransactionDate] = useState<string>('');
   const [description, setDescription] = useState<string>('');
@@ -58,7 +59,9 @@ export default function EditTransactionPage({ params }: { params: { id: string }
 
         const trx = data.data;
         setType(trx.type);
-        setAmount(trx.amount.toString());
+        const amtStr = trx.amount.toString();
+        setRawAmount(amtStr);
+        setAmount(new Intl.NumberFormat('id-ID').format(trx.amount));
         setCategoryId(trx.categoryId);
         setTransactionDate(trx.transactionDate ? trx.transactionDate.split('T')[0] : '');
         setDescription(trx.description || '');
@@ -120,7 +123,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!amount || Number(amount) < 1) {
+    if (!rawAmount || Number(rawAmount) < 1) {
       setErrorMsg('Nominal transaksi minimal Rp 1');
       return;
     }
@@ -140,7 +143,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
     try {
       const payload = {
         type,
-        amount: Number(amount),
+        amount: Number(rawAmount),
         categoryId,
         transactionDate,
         description: description || undefined,
@@ -287,12 +290,16 @@ export default function EditTransactionPage({ params }: { params: { id: string }
           <div className="relative flex items-center">
             <span className="absolute left-4 font-mono font-bold text-lg text-[#888888] dark:text-[#a1a1a1]">Rp</span>
             <input
-              type="number"
-              min="1"
+              type="text"
+              inputMode="numeric"
               required
               placeholder="0"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '');
+                setRawAmount(digits);
+                setAmount(digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '');
+              }}
               className="w-full bg-[#ffffff] dark:bg-[#000000] border border-[#ebebeb] dark:border-[#262626] rounded-xl pl-12 pr-4 py-3.5 text-xl font-bold font-mono text-[#171717] dark:text-[#ffffff] focus:outline-none focus:border-[#0070f3] dark:focus:border-[#50e3c2] transition-colors"
             />
           </div>
