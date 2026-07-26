@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { readDb, writeDb } from '@/lib/db';
+import { readDb } from '@/lib/db';
 import { createToken } from '@/lib/auth';
 import { logAudit } from '@/lib/audit';
 
@@ -19,11 +19,11 @@ export async function POST(req: NextRequest) {
     const db = readDb();
     const targetCode = userCode.trim().toUpperCase();
 
-    // Match by userCode (or fallback to email if legacy)
+    // Match by userCode (or legacy email check)
     const user = db.users.find(
       (u) =>
         (u.userCode && u.userCode.toUpperCase() === targetCode) ||
-        (u.email && u.email.toUpperCase() === targetCode)
+        ((u as any).email && (u as any).email.toUpperCase() === targetCode)
     );
 
     if (!user) {

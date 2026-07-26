@@ -80,4 +80,21 @@ export function getUserSession(): UserSession | null {
   }
 }
 
+export function setUserSession(user: UserSession): void {
+  const cookieStore = cookies();
+  const token = createToken(user);
+  cookieStore.set('sf_session', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60,
+  });
+}
+
+export function clearSessionCookie(): void {
+  const cookieStore = cookies();
+  cookieStore.delete('sf_session');
+}
+
 export const getSession = getUserSession;
