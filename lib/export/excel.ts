@@ -1,8 +1,7 @@
 import ExcelJS from 'exceljs';
-import { TransactionItem } from '../types';
 import { formatDate } from '../utils';
 
-export async function generateExcelReport(transactions: TransactionItem[], title = 'Laporan Transaksi Keuangan'): Promise<Buffer> {
+export async function generateExcelReport(transactions: any[], title = 'Laporan Transaksi Keuangan'): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'UangKasir';
   workbook.lastModifiedBy = 'Admin';

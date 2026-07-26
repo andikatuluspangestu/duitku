@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { DashboardSummary } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,7 +66,7 @@ export async function GET() {
     percentage: totalIncome > 0 ? Math.round((incCategoryMap[catName] / totalIncome) * 100) : 0,
   }));
 
-  const summaryData: DashboardSummary = {
+  const summaryData = {
     totalIncome,
     totalExpense,
     balance,

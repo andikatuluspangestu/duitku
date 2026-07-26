@@ -1,9 +1,8 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { TransactionItem } from '../types';
 import { formatDate, formatRupiah } from '../utils';
 
-export function generatePdfReport(transactions: TransactionItem[], title = 'Laporan Keuangan Kas'): Buffer {
+export function generatePdfReport(transactions: any[], title = 'Laporan Keuangan Kas'): Buffer {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
