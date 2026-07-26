@@ -310,7 +310,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                 required
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full vercel-input pl-10 text-sm font-semibold py-3"
+                className="w-full vercel-input !pl-10 text-sm font-semibold py-3"
               >
                 <option value="">-- Pilih Kategori --</option>
                 {filteredCategories.map((cat) => (
@@ -333,7 +333,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                 required
                 value={transactionDate}
                 onChange={(e) => setTransactionDate(e.target.value)}
-                className="w-full vercel-input pl-10 text-sm font-mono py-3 font-semibold"
+                className="w-full vercel-input !pl-10 text-sm font-mono py-3 font-semibold"
               />
             </div>
           </div>

@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onMenuToggle }) => {
         {/* System Identifier */}
         <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fafafa] dark:bg-[#171717] border border-[#ebebeb] dark:border-[#262626] text-[11px] text-[#171717] dark:text-[#a1a1a1] font-caption-mono">
           <Command className="w-3 h-3 text-[#0070f3]" />
-          <span>duitku-v2</span>
+          <span>uangkasir-v2</span>
         </div>
 
         {/* Theme Toggle Button */}

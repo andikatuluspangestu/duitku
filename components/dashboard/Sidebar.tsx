@@ -126,7 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Link href="/dashboard" className="flex items-center gap-2 group">
               <div className="flex flex-col">
                 <span className="font-extrabold text-[#171717] dark:text-[#ffffff] text-lg tracking-tight">
-                  Duitku<span className="text-[#0070f3]">.</span>
+                  UangKasir<span className="text-[#0070f3]">.</span>
                 </span>
                 <span className="font-caption-mono text-[10px] text-[#888888] dark:text-[#737373] uppercase tracking-wider whitespace-nowrap">
                   Kas Keuangan

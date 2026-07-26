@@ -182,7 +182,7 @@ export default function ReportsPage() {
             </div>
             <h3 className="text-lg font-bold text-[#171717] dark:text-[#ffffff] mb-1">Dokumen PDF Resmi</h3>
             <p className="font-caption-mono text-xs text-[#888888] dark:text-[#a1a1a1] leading-relaxed mb-4">
-              Dokumen siap cetak dengan logo Duitku dan ringkasan kas.
+              Dokumen siap cetak dengan logo UangKasir dan ringkasan kas.
             </p>
             <ul className="space-y-2 font-caption-mono text-xs text-[#4d4d4d] dark:text-[#a1a1a1] mb-6">
               <li className="flex items-center gap-2">

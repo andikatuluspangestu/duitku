@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     transactions.sort((a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime());
 
-    const pdfBuffer = generatePdfReport(transactions, 'Laporan Keuangan Kas Duitku');
+    const pdfBuffer = generatePdfReport(transactions, 'Laporan Keuangan Kas UangKasir');
 
     await logAudit(
       'EXPORT_PDF',

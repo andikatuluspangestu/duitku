@@ -1,4 +1,4 @@
-// Simple Finance (Duitku) Prisma Schema
+// UangKasir Prisma Schema
 
 generator client {
   provider = "prisma-client-js"

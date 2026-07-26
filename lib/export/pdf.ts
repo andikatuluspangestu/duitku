@@ -117,7 +117,7 @@ export function generatePdfReport(transactions: TransactionItem[], title = 'Lapo
     doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(148, 163, 184);
-    doc.text(`Halaman ${i} dari ${pageCount} - Simple Finance (Duitku)`, 105, 290, { align: 'center' });
+    doc.text(`Halaman ${i} dari ${pageCount} - UangKasir`, 105, 290, { align: 'center' });
   }
 
   const pdfArrayBuffer = doc.output('arraybuffer');

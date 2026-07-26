@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     transactions.sort((a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime());
 
-    const excelBuffer = await generateExcelReport(transactions, 'Laporan Arus Kas Duitku');
+    const excelBuffer = await generateExcelReport(transactions, 'Laporan Arus Kas UangKasir');
 
     await logAudit(
       'EXPORT_EXCEL',

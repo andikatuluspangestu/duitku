@@ -4,7 +4,7 @@ import { formatDate } from '../utils';
 
 export async function generateExcelReport(transactions: TransactionItem[], title = 'Laporan Transaksi Keuangan'): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'Simple Finance (Duitku)';
+  workbook.creator = 'UangKasir';
   workbook.lastModifiedBy = 'Admin';
   workbook.created = new Date();
 

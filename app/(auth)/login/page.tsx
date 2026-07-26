@@ -69,10 +69,10 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fafafa] dark:bg-[#171717] border border-[#ebebeb] dark:border-[#262626] text-[11px] font-caption-mono text-[#4d4d4d] dark:text-[#a1a1a1] mb-3">
             <Sparkles className="w-3.5 h-3.5 text-[#50e3c2]" />
-            <span>Duitku Kas v2.0</span>
+            <span>UangKasir Kas v2.0</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#171717] dark:text-[#ffffff]">
-            Duitku<span className="text-[#0070f3]">.</span>
+            UangKasir<span className="text-[#0070f3]">.</span>
           </h1>
           <p className="text-xs text-[#888888] dark:text-[#737373] mt-2 font-medium">
             Sistem Pencatatan Kas Keuangan Sederhana
@@ -94,14 +94,14 @@ export default function LoginPage() {
               Kode User
             </label>
             <div className="relative flex items-center">
-              <UserCheck className="w-4 h-4 text-[#888888] dark:text-[#737373] absolute left-3.5 pointer-events-none shrink-0" />
+              <UserCheck className="w-4 h-4 text-[#888888] dark:text-[#737373] absolute left-3.5 pointer-events-none shrink-0 z-10" />
               <input
                 type="text"
                 required
                 placeholder="cth: USR001"
                 value={userCode}
                 onChange={(e) => setUserCode(e.target.value)}
-                className="w-full vercel-input pl-10 text-sm font-mono uppercase font-bold"
+                className="w-full vercel-input !pl-10 text-sm font-mono uppercase font-bold"
               />
             </div>
           </div>
@@ -111,14 +111,14 @@ export default function LoginPage() {
               Password
             </label>
             <div className="relative flex items-center">
-              <Lock className="w-4 h-4 text-[#888888] dark:text-[#737373] absolute left-3.5 pointer-events-none shrink-0" />
+              <Lock className="w-4 h-4 text-[#888888] dark:text-[#737373] absolute left-3.5 pointer-events-none shrink-0 z-10" />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full vercel-input pl-10 text-sm font-sans"
+                className="w-full vercel-input !pl-10 text-sm font-sans"
               />
             </div>
           </div>
